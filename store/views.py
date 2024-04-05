@@ -1,7 +1,9 @@
 import random
+from django.urls import reverse
 from functools import wraps
 from urllib import request
-
+import os
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from .models import *
@@ -104,7 +106,7 @@ class ShopController:
         name = POST.get('name')
         tagID = int(POST.get('tagID'))
         price = float(POST.get('price'))
-        size = POST.get('size')
+        size = str(POST.get('size'))
         valid_sizes = ('XL', 'XS', 'S', 'M', 'L')
         if size not in valid_sizes:
             return JsonResponse(
@@ -112,7 +114,8 @@ class ShopController:
                 status=400)
 
         t = Tag.objects.filter(tagID=tagID).first()
-        size = Size.objects.filter(sizeType=size).first()
+        size = Size(sizeType=size)
+        size.save()
         if store is None:
             return JsonResponse({'error': 'Shop has no store'}, status=400)
         item = Item(storeID=store, description=description, isFeminine=style, name=name, price=price, size=size)
@@ -175,12 +178,12 @@ class ShopController:
         id = request.GET.get('id')
         item = Item.objects.filter(itemID=id).first()
         links = Slug.objects.filter(itemID=item, isDeleted=0)
-        from preloved import preloved_secrets
         link_list = []
         for link in links:
-            link_list.append(preloved_secrets.STORAGE + link.slug)
+            link_list.append("https://preloved.westus3.cloudapp.azure.com/media/" + link.slug)
         return JsonResponse({'id' : id, 'image_links' : link_list})
 
+    
     @staticmethod
     def get_item_details(request):
         if not request.user.is_authenticated:
@@ -379,12 +382,10 @@ class ShopController:
 
 
 
-
-
-
-
 shopController = ShopController()
-ShopController.generate_random_vouchers(10)
+
+
+
 
 def add_item(request):
     return shopController.add_item(request)

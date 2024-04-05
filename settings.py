@@ -12,13 +12,15 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from . import preloved_secrets as secrets
+import os
 # Other imports...
 from corsheaders.middleware import CorsMiddleware
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles'), ]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -56,9 +58,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",  # Assuming your frontend runs on a different server
     "http://127.0.0.1:8000",
     "http://127.0.0.1:5500", # Alternate localhost address
-    'https://prelovedbackends.azurewebsites.net',
-    'http://localhost:5173',
+    "https://prelovedbackends.azurewebsites.net",
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://preloved.westus3.cloudapp.azure.com",
+    "https://preloved.pages.dev"
 ]
 
 

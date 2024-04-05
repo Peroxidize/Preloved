@@ -57,7 +57,7 @@ class HomePageController:
 
     @staticmethod
     def generate_link(slug):
-        return preloved_secrets.STORAGE + slug
+        return "https://preloved.westus3.cloudapp.azure.com/media/"+ slug
 
     @staticmethod
     def search(request):
@@ -120,7 +120,7 @@ class CartController:
                 'storeName': item.item.storeID.storeName,
                 'storeID': item.item.storeID.storeID,
                 'size': item.item.size.sizeType,
-                'thumbnail': preloved_secrets.STORAGE + firstItem.slug
+                'thumbnail': "https://preloved.westus3.cloudapp.azure.com/media/" + firstItem.slug
             })
         return JsonResponse({'cart': shoppingCart})
 

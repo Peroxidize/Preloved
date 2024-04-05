@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 from . import preloved_secrets as secrets
 # Other imports...
 from corsheaders.middleware import CorsMiddleware
@@ -18,7 +19,7 @@ from corsheaders.middleware import CorsMiddleware
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'homepage',
     'preloved_collections'
 ]
+CORS_ALLOW_ALL_HEADERS = True
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_EXPOSE_HEADERS = ["Set-Cookie"]
 CORS_ALLOWED_ORIGINS = [
@@ -61,6 +63,9 @@ CORS_ALLOWED_ORIGINS = [
     'https://prelovedbackends.azurewebsites.net',
     'http://localhost:5173',
     "http://127.0.0.1:5173",
+    "http://preloved.westus3.cloudapp.azure.com",
+    "https://preloved.westus3.cloudapp.azure.com",
+    "https://preloved.pages.dev",
 ]
 
 APPEND_SLASH = False
@@ -85,11 +90,9 @@ LOGGING = {
 
 
 
-DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-AZURE_ACCOUNT_NAME = secrets.AZURE_ACCOUNT_NAME
-AZURE_ACCOUNT_KEY = secrets.AZURE_ACCOUNT_KEY_1
-AZURE_CONTAINER = secrets.AZURE_CONTAINER
-AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -138,11 +141,11 @@ WSGI_APPLICATION = 'preloved.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': secrets.DATABASE,
-        'USER': secrets.USER,
-        'PASSWORD': secrets.PASSWORD,
-        'HOST': secrets.SERVER,
-        'PORT': secrets.PORT,
+        'NAME': 'preloved',
+        'USER': 'prelovedadmin',
+        'PASSWORD': 'prelovedSE2324',
+        'HOST': 'localhost',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
