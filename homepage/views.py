@@ -87,11 +87,15 @@ class HomePageController:
         # cursor.callproc('search', [params])
         # results = cursor.fetchall()
         query_result = []
+        itemIDs = []
         for result in results.objects:
+            if result.properties["itemId"] in itemIDs:
+                continue
             query_result.append({
                 'itemID': result.properties["itemId"],
                 'name': result.properties["name"]
             })
+            itemIDs.append(result.properties["itemId"])
         return JsonResponse({'results': query_result})
 
 
