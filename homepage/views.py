@@ -1,3 +1,4 @@
+import weaviate
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -62,16 +63,39 @@ class HomePageController:
     @staticmethod
     def search(request):
         params = request.GET.get('q')
-        from django.db import connections
-        cursor = connections['default'].cursor()
-        cursor.callproc('search', [params])
-        results = cursor.fetchall()
+        client = weaviate.connect_to_custom(
+            http_host="34.87.112.226",
+            http_port=8080,
+            http_secure=False,
+            grpc_host="34.87.112.226",
+            grpc_port=50051,
+            grpc_secure=False,
+        )
+        results = None
+        try:
+            items = client.collections.get("ItemMM")
+            results = items.query.near_text(
+                query=params,
+                distance=0.6,
+                return_properties=["itemId", "name"]
+                # To include the poster property in the response (`blob` properties are not returned by default)
+            )
+        finally:
+            client.close()
+        # from django.db import connections
+        # cursor = connections['default'].cursor()
+        # cursor.callproc('search', [params])
+        # results = cursor.fetchall()
         query_result = []
-        for result in results:
+        itemIDs = []
+        for result in results.objects:
+            if result.properties["itemId"] in itemIDs:
+                continue
             query_result.append({
-                'itemID': result[0],
-                'name': result[1]
+                'itemID': result.properties["itemId"],
+                'name': result.properties["name"]
             })
+            itemIDs.append(result.properties["itemId"])
         return JsonResponse({'results': query_result})
 
 
