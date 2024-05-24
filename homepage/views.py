@@ -22,7 +22,7 @@ class HomePageController:
             return return_not_auth()
         if request.session.get('items') is None:
             request.session['items'] = []
-        if len(request.session.get('items')) == 0:
+        if len(request.session.get('items')) <= 5:
             request.session['items'] = HomePageController.generate_iterative_homepage()
         item: list = request.session['items']
         items = []
@@ -44,7 +44,7 @@ class HomePageController:
             map['item_id'] = item.itemID
             map['item_name'] = item.name
             map['item_description'] = item.description
-            map['item_price'] = item.price
+            map['item_price'] = float(item.price)
             map['size'] = item.size.sizeType
             map['is_feminine'] = item.isFeminine
             map['storeID'] = item.storeID.storeID
