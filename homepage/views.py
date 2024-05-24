@@ -82,10 +82,6 @@ class HomePageController:
             )
         finally:
             client.close()
-        # from django.db import connections
-        # cursor = connections['default'].cursor()
-        # cursor.callproc('search', [params])
-        # results = cursor.fetchall()
         query_result = []
         itemIDs = []
         for result in results.objects:
@@ -121,10 +117,6 @@ class HomePageController:
             )
         finally:
             client.close()
-        # from django.db import connections
-        # cursor = connections['default'].cursor()
-        # cursor.callproc('search', [params])
-        # results = cursor.fetchall()
         query_result = []
         itemIDs = []
         for result in results.objects:
