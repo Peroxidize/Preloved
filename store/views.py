@@ -1,4 +1,5 @@
 import random
+import json
 from django.urls import reverse
 from functools import wraps
 from urllib import request
@@ -9,6 +10,43 @@ from django.shortcuts import render
 from .models import *
 from preloved_auth.models import ShopOwner, Location
 from storage.views import StorageWorker
+import torch 
+import pandas as pd
+from PIL import Image
+from torch import nn, optim
+from torchvision.models import mobilenet_v3_large, MobileNet_V3_Large_Weights
+
+df = pd.read_csv("empty-dataset.csv")
+
+model = mobilenet_v3_large()
+weights = MobileNet_V3_Large_Weights.DEFAULT
+preprocess = weights.transforms()
+
+# Freeze the feature extractor layers
+for param in model.parameters():
+    param.requires_grad = False
+
+# Modify the model to match the number of classes in the dataset
+num_classes = df.shape[1] - 1
+
+# Add dropout before the final fully connected layer
+model.classifier[3] = nn.Sequential(
+    nn.Dropout(p=0.2),  # 20% dropout
+    nn.Linear(model.classifier[3].in_features, num_classes)
+)
+
+# Unfreeze the classifier layers
+for param in model.classifier.parameters():
+    param.requires_grad = True
+
+# Move model to GPU if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+print(device)
+
+# Load the model state
+model.load_state_dict(torch.load('best_mobile_modelV3_0.1519_0.9475.pth', map_location=torch.device('cpu')))
+print(model.eval())  # Set model to evaluation mode
 
 storage_worker = StorageWorker()
 
@@ -170,6 +208,25 @@ class ShopController:
         slug.save()
 
         return JsonResponse({'response': 'Ok!', 'slug': slugString})
+
+    def auto_tag_item(request):
+        image = request.FILES.get('img')
+        image_tensor = preprocess(image).unsqueeze(0)  # Preprocess and add batch dimension
+        image_tensor = image_tensor.to(device)
+        
+        with torch.no_grad():
+            outputs = model(image_tensor)
+            preds = torch.sigmoid(outputs) > 0.4  # Apply sigmoid and threshold
+        
+        predictions = preds.cpu().numpy()
+
+        labels = df.columns[1:]  # Assuming first column is 'Image name'
+        predicted_labels = {label: bool(pred) for label, pred in zip(labels, predictions[0])}
+
+        # Filter only the true labels
+        true_labels = [label for label, is_true in predicted_labels.items() if is_true]
+
+        return JsonResponse(json.dumps(true_labels))
 
     @staticmethod
     def get_item_images(request):
