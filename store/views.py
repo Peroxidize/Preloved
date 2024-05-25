@@ -15,8 +15,9 @@ import pandas as pd
 from PIL import Image
 from torch import nn, optim
 from torchvision.models import mobilenet_v3_large, MobileNet_V3_Large_Weights
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
-df = pd.read_csv("empty-dataset.csv")
+df = pd.read_csv("~/preloved/store/empty-dataset.csv")
 
 model = mobilenet_v3_large()
 weights = MobileNet_V3_Large_Weights.DEFAULT
@@ -45,7 +46,7 @@ model.to(device)
 print(device)
 
 # Load the model state
-model.load_state_dict(torch.load('best_mobile_modelV3_0.1519_0.9475.pth', map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("/home/azureuser/preloved/store/ai_model.pth", map_location=torch.device('cpu')))
 print(model.eval())  # Set model to evaluation mode
 
 storage_worker = StorageWorker()
@@ -209,15 +210,20 @@ class ShopController:
 
         return JsonResponse({'response': 'Ok!', 'slug': slugString})
 
+    @staticmethod
     def auto_tag_item(request):
-        image = request.FILES.get('img')
+        if request.method != 'POST':
+            return return_not_post()
+
+        image_file = request.FILES.get('img')
+        image = Image.open(image_file).convert('RGB')
         image_tensor = preprocess(image).unsqueeze(0)  # Preprocess and add batch dimension
         image_tensor = image_tensor.to(device)
-        
+
         with torch.no_grad():
             outputs = model(image_tensor)
             preds = torch.sigmoid(outputs) > 0.4  # Apply sigmoid and threshold
-        
+
         predictions = preds.cpu().numpy()
 
         labels = df.columns[1:]  # Assuming first column is 'Image name'
@@ -226,7 +232,7 @@ class ShopController:
         # Filter only the true labels
         true_labels = [label for label, is_true in predicted_labels.items() if is_true]
 
-        return JsonResponse(json.dumps(true_labels))
+        return JsonResponse(true_labels, safe=False)
 
     @staticmethod
     def get_item_images(request):
@@ -455,4 +461,5 @@ def get_all_tags(request):
 def create_new_shop(request):
     return shopController.create_new_shop(request)
 
-
+def auto_tag_item(request):
+    return shopController.auto_tag_item(request)
