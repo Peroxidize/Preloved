@@ -11,6 +11,7 @@ from preloved_auth.models import *
 from store.models import *
 from store.views import return_not_auth, return_not_post, return_id_not_found
 from preloved import preloved_secrets
+import base64
 
 
 class HomePageController:
@@ -78,14 +79,44 @@ class HomePageController:
                 query=params,
                 distance=0.6,
                 return_properties=["itemId", "name"]
-                # To include the poster property in the response (`blob` properties are not returned by default)
             )
         finally:
             client.close()
-        # from django.db import connections
-        # cursor = connections['default'].cursor()
-        # cursor.callproc('search', [params])
-        # results = cursor.fetchall()
+        query_result = []
+        itemIDs = []
+        for result in results.objects:
+            if result.properties["itemId"] in itemIDs:
+                continue
+            query_result.append({
+                'itemID': result.properties["itemId"],
+                'name': result.properties["name"]
+            })
+            itemIDs.append(result.properties["itemId"])
+        return JsonResponse({'results': query_result})
+
+    @staticmethod
+    def img_search(request):
+        params = request.FILES.get('photo')
+        client = weaviate.connect_to_custom(
+            http_host="34.87.112.226",
+            http_port=8080,
+            http_secure=False,
+            grpc_host="34.87.112.226",
+            grpc_port=50051,
+            grpc_secure=False,
+        )
+        results = None
+        try:
+            items = client.collections.get("ItemMM")
+            photo_data = params.read()
+            encoded = base64.b64encode(photo_data).decode('utf-8')
+            results = items.query.near_image(
+                query=encoded,
+                distance=0.6,
+                return_properties=["itemId", "name"]
+            )
+        finally:
+            client.close()
         query_result = []
         itemIDs = []
         for result in results.objects:
