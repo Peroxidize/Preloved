@@ -200,6 +200,7 @@ class ShopController:
             return return_not_post()
 
         imgStream = request.FILES.get('img')
+        imgStream.seek(0)  # Reset the file pointer to the beginning
         imgID = int(request.POST.get('id'))
         item = Item.objects.filter(itemID=imgID).first()
         if item is None:
@@ -211,6 +212,7 @@ class ShopController:
         slug = Slug(slug=slugString, itemID=item, isThumbnail=thumbnailify(imgID))
         slug.save()
 
+        imgStream.seek(0)  # Reset the file pointer to the beginning
         # Convert to Base64
         img_bytes = imgStream.read()
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
