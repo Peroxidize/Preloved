@@ -222,6 +222,7 @@ class ShopController:
             grpc_port=50051,
             grpc_secure=False,
         )
+        errors = []
         try:
             items = client.collections.get("ItemMM")
             item_obj = {
@@ -232,10 +233,16 @@ class ShopController:
             }
             with items.batch.dynamic() as batch:
                 batch.add_object(properties=item_obj, uuid=generate_uuid5(item.itemID))
+            # Check for failed objects
+            if len(items.batch.failed_objects) > 0:
+                print(f"Failed to import {len(items.batch.failed_objects)} objects")
+                for failed in items.batch.failed_objects:
+                    print(f"e.g. Failed to import object with error: {failed.message}")
+                    errors.append(failed.message)
         finally:
             client.close()
 
-        return JsonResponse({'response': 'Ok!', 'slug': slugString})
+        return JsonResponse({'response': 'Ok!', 'slug': slugString, 'errors': errors, 'itemObj': item_obj})
 
     @staticmethod
     def auto_tag_item(request):
