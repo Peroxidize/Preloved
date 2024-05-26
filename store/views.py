@@ -230,7 +230,7 @@ class ShopController:
                 "name": item.name,
                 "description": item.description,
             }
-            with items.batch.fixed_size(1) as batch:
+            with items.batch.dynamic() as batch:
                 batch.add_object(properties=item_obj, uuid=generate_uuid5(item.itemID))
         finally:
             client.close()
