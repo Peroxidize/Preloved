@@ -16,6 +16,9 @@ from PIL import Image
 from torch import nn, optim
 from torchvision.models import mobilenet_v3_large, MobileNet_V3_Large_Weights
 from django.core.files.uploadedfile import InMemoryUploadedFile
+import base64
+import weaviate
+from weaviate.util import generate_uuid5
 
 df = pd.read_csv("~/preloved/store/empty-dataset.csv")
 
@@ -207,6 +210,30 @@ class ShopController:
             return return_not_auth()
         slug = Slug(slug=slugString, itemID=item, isThumbnail=thumbnailify(imgID))
         slug.save()
+
+        # Convert to Base64
+        img_bytes = imgStream.read()
+        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+        client = weaviate.connect_to_custom(
+            http_host="34.87.112.226",
+            http_port=8080,
+            http_secure=False,
+            grpc_host="34.87.112.226",
+            grpc_port=50051,
+            grpc_secure=False,
+        )
+        try:
+            items = client.collections.get("ItemMM")
+            item_obj = {
+                "itemId": item.itemID,
+                "image": img_base64,
+                "name": item.name,
+                "description": item.description,
+            }
+            with items.batch.fixed_size(1) as batch:
+                batch.add_object(properties=item_obj, uuid=generate_uuid5(item.itemID))
+        finally:
+            client.close()
 
         return JsonResponse({'response': 'Ok!', 'slug': slugString})
 
