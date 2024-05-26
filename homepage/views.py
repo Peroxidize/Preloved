@@ -96,6 +96,9 @@ class HomePageController:
 
     @staticmethod
     def img_search(request):
+        if request.method != 'POST':
+            return return_not_post()
+
         params = request.FILES.get('photo')
         client = weaviate.connect_to_custom(
             http_host="34.87.112.226",
@@ -111,7 +114,7 @@ class HomePageController:
             photo_data = params.read()
             encoded = base64.b64encode(photo_data).decode('utf-8')
             results = items.query.near_image(
-                query=encoded,
+                near_image=encoded,
                 distance=0.6,
                 return_properties=["itemId", "name"]
             )
