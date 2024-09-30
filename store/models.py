@@ -58,6 +58,7 @@ class Slug(models.Model):
     itemID = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='slugs')
     isDeleted = models.IntegerField(default=0)
     isThumbnail = models.IntegerField(default=0)
+    isModelRegistered = models.BooleanField(default=False)
 
     def __str__(self):
         return self.slug
