@@ -40,7 +40,7 @@ class VGGFeatureExtractor:
         x = x.unsqueeze(0)
 
         with torch.no_grad():
-            return self.model(x).view(x.size(0), -1)
+            return self.model(x).view(x.size(0), -1)[0]
 
 # Example usage:
 # extractor = VGGFeatureExtractor()

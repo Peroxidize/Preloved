@@ -3,5 +3,3 @@ from store.models import Slug
 # Create your models here.
 
 
-
-
