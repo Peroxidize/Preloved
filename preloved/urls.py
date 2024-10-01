@@ -28,6 +28,6 @@ urlpatterns = [
     path('store/', include('store.urls')),
     path('homepage/', include('homepage.urls')),
     path('collections/', include('preloved_collections.urls')),
-    path('models/', include('models.urls')),
+   # path('models/', include('models.urls')),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
