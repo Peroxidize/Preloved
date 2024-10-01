@@ -19,7 +19,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 import base64
 import weaviate
 from weaviate.util import generate_uuid5
-
+"""
 df = pd.read_csv("~/preloved/store/empty-dataset.csv")
 
 model = mobilenet_v3_large()
@@ -52,6 +52,8 @@ print(device)
 model.load_state_dict(torch.load("/home/azureuser/preloved/store/ai_model.pth", map_location=torch.device('cpu')))
 print(model.eval())  # Set model to evaluation mode
 
+    
+"""
 storage_worker = StorageWorker()
 
 
@@ -250,7 +252,7 @@ class ShopController:
     def auto_tag_item(request):
         if request.method != 'POST':
             return return_not_post()
-
+        """
         image_file = request.FILES.get('img')
         image = Image.open(image_file).convert('RGB')
         image_tensor = preprocess(image).unsqueeze(0)  # Preprocess and add batch dimension
@@ -268,7 +270,8 @@ class ShopController:
         # Filter only the true labels
         true_labels = [label for label, is_true in predicted_labels.items() if is_true]
 
-        return JsonResponse(true_labels, safe=False)
+        """
+        return JsonResponse({"status": "service not available"}, status=404)
 
     @staticmethod
     def get_item_images(request):
