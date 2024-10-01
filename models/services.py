@@ -8,9 +8,14 @@ from . import central_model
 def cascade_update_on_startup():
     objects = Slug.objects.filter(isModelRegistered=False)
     extractor = VGGFeatureExtractor()
+    cnt = 1
     for obj in objects:
+        print(f"Finished {cnt}/{len(objects)}")
+        cnt += 1
         img = download_image(obj.slug)
         add_vector_to_database(obj.slugID, extractor.extract_features(img))
+        obj.isModelRegistered = True
+        obj.save()
 
 
 def add_vector_to_database(slug_id, vector, item_id):
