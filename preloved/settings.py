@@ -150,12 +150,23 @@ DATABASES = {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
+    
 }
 
+"""
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'preloved',  # Assuming the database name is 'preloved'
+        'USER': 'admin',
+        'PASSWORD': 'preloved-admin',
+        'HOST': '127.0.0.1',  # Localhost, since we're using SSH tunneling
+        'PORT': '3307',  # The local port used in the SSH tunnel
+    }
+}
 
-
-
+"""
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

@@ -4,7 +4,7 @@ from store.models import Slug, Item
 from .services import download_image, cascade_update_on_startup, query_database
 from . import extractor
 
-cascade_update_on_startup()
+# cascade_update_on_startup()
 # Create your views here.
 
 def get_similar_items(request):

@@ -52,5 +52,6 @@ class VGGFeatureExtractor:
 import requests
 
 def download_image(url):
+    print('Downloading image...', "https://preloved.westus3.cloudapp.azure.com/media/" + url)
     response = requests.get("https://preloved.westus3.cloudapp.azure.com/media/" + url)
     return response.content
