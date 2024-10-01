@@ -18,8 +18,6 @@ class HomePageController:
 
     @staticmethod
     def homepage(request):
-        if not request.user.is_authenticated:
-            return return_not_auth()
         if request.session.get('items') is None:
             request.session['items'] = []
         if len(request.session.get('items')) <= 5:
@@ -48,6 +46,7 @@ class HomePageController:
             map['size'] = item.size.sizeType
             map['is_feminine'] = item.isFeminine
             map['storeID'] = item.storeID.storeID
+            map['storeName'] = item.storeID.storeName
             images = []
             map['images'] = images
             image_slugs = Slug.objects.filter(itemID=item, isDeleted=0)
