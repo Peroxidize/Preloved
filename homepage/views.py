@@ -177,7 +177,7 @@ class CartController:
                 'storeName': item.item.storeID.storeName,
                 'storeID': item.item.storeID.storeID,
                 'size': item.item.size.sizeType,
-                'thumbnail': "https://preloved.westus3.cloudapp.azure.com/media/" + firstItem.slug
+                'thumbnail': "https://preloved.westus2.cloudapp.azure.com/media/" + firstItem.slug
             })
         return JsonResponse({'cart': shoppingCart})
 
