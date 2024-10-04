@@ -58,7 +58,7 @@ class HomePageController:
 
     @staticmethod
     def generate_link(slug):
-        return "https://preloved.westus3.cloudapp.azure.com/media/"+ slug
+        return "https://preloved.westus2.cloudapp.azure.com/media/"+ slug
 
     @staticmethod
     def search(request):
