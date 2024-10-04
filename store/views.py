@@ -282,7 +282,7 @@ class ShopController:
         links = Slug.objects.filter(itemID=item, isDeleted=0)
         link_list = []
         for link in links:
-            link_list.append("https://preloved.westus3.cloudapp.azure.com/media/" + link.slug)
+            link_list.append("https://preloved.westus2.cloudapp.azure.com/media/" + link.slug)
         return JsonResponse({'id' : id, 'image_links' : link_list})
 
     
