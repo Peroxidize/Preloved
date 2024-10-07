@@ -13,7 +13,7 @@ def cascade_update_on_startup():
         print(f"Loading: {cnt}/{len(objects)}, with actual slug {obj.slug}")
         cnt += 1
         img = download_image(obj.slug)
-        add_vector_to_database(obj.slugID, extractor.extract_features(img))
+        add_vector_to_database(obj.slugID, extractor.extract_features(img), obj.itemID.itemID)
         obj.isModelRegistered = True
         obj.save()
 
