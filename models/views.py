@@ -10,9 +10,8 @@ from . import extractor
 def get_similar_items(request):
     itemID = request.GET.get('item_id')
     num = request.GET.get('num')
-    item = Item.objects.get(pk=itemID)
     img = Slug.objects.filter(itemID=itemID).first()
-    items = query_database(extractor.extract_features(img), n=num, not_equal_to=img.itemID)
+    items = query_database(extractor.extract_features(img), n=num, not_equal_to=itemID)
     return JsonResponse({"items" : items})
 
 
