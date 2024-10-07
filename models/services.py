@@ -30,6 +30,7 @@ def add_vector_to_database(slug_id, vector, item_id):
 
 
 def query_database(vector_embeddings, n=20, not_equal_to=None):
+    n+=1
     # Step 1: Query the database for similar vectors
     items = central_model.query(
         query_embeddings=[vector_embeddings],
