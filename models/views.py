@@ -9,7 +9,7 @@ from homepage.views import HomePageController
 # Create your views here.
 
 def get_similar_items(request):
-    itemID = request.GET.get('item_id')
+    itemID = int(request.GET.get('item_id'))
     num = int(request.GET.get('num'))
     slug = Slug.objects.filter(itemID=itemID).first()
     img = download_image(slug.slug)
