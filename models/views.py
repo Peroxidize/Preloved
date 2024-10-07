@@ -23,14 +23,13 @@ def get_similar_items(request):
     items_data = []
     for item in similar_items:
         slug = Slug.objects.filter(itemID=item.itemID).first()
-        store = Store.objects.get(storeID=item.storeID)
         link = HomePageController.generate_link(slug.slug)
         items_data.append({
             'itemID': item.itemID,
             'name': item.name,
             'price': str(item.price),  # Convert Decimal to string for JSON serialization
             'image': link,
-            'storeName': store.storeName
+            'storeName': item.storeID.storeName
         })
 
     return JsonResponse({"items" : items_data})
