@@ -3,7 +3,6 @@ import torchvision.transforms as transforms
 from torchvision.models import vgg16, VGG16_Weights
 from PIL import Image
 import io
-from pillow_avif import register_avif_opener
 
 class VGGFeatureExtractor:
     def __init__(self, model_name='vgg16', use_pretrained=True):
@@ -26,7 +25,6 @@ class VGGFeatureExtractor:
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-        register_avif_opener()
 
     def extract_features(self, image_binary):
         # Convert binary data to PIL Image
