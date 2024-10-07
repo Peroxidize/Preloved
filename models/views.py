@@ -10,7 +10,7 @@ from homepage.views import HomePageController
 
 def get_similar_items(request):
     itemID = request.GET.get('item_id')
-    num = request.GET.get('num')
+    num = int(request.GET.get('num'))
     slug = Slug.objects.filter(itemID=itemID).first()
     img = download_image(slug.slug)
     features = extractor.extract_features(img)
