@@ -14,8 +14,11 @@ def get_similar_items(request):
     slug = Slug.objects.filter(itemID=itemID).first()
     img = download_image(slug.slug)
     features = extractor.extract_features(img)
-    items = query_database(features, n=num, not_equal_to=itemID)
-    return JsonResponse({"items" : items})
+    itemsArr = query_database(features, n=num, not_equal_to=itemID)
+
+    # Filter Items based on itemsArr
+    similar_items = Item.objects.filter(itemID__in=itemsArr)
+    return JsonResponse({"items" : similar_items})
 
 
 
