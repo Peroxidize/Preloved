@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import render
-from store.models import Slug, Item
+from store.models import Slug, Item, Store
 from .services import download_image, cascade_update_on_startup, query_database
 from . import extractor
 from homepage.views import HomePageController
@@ -18,7 +18,22 @@ def get_similar_items(request):
 
     # Filter Items based on itemsArr
     similar_items = Item.objects.filter(itemID__in=itemsArr)
-    return JsonResponse({"items" : similar_items})
+
+    # Prepare the data including the slug
+    items_data = []
+    for item in similar_items:
+        slug = Slug.objects.filter(itemID=item.itemID).first()
+        store = Store.objects.get(storeID=item.storeID)
+        link = HomePageController.generate_link(slug.slug)
+        items_data.append({
+            'itemID': item.itemID,
+            'name': item.name,
+            'price': str(item.price),  # Convert Decimal to string for JSON serialization
+            'image': link,
+            'storeName': store.storeName
+        })
+
+    return JsonResponse({"items" : items_data})
 
 
 
