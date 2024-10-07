@@ -3,6 +3,7 @@ import torchvision.transforms as transforms
 from torchvision.models import vgg16, VGG16_Weights
 from PIL import Image
 import io
+import pillow_avif
 
 class VGGFeatureExtractor:
     def __init__(self, model_name='vgg16', use_pretrained=True):
