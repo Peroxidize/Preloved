@@ -6,7 +6,7 @@ from django.utils import timezone
 from tickets.models import Ticket
 from .models import *
 # Create your views here.
-
+from models import title_model
 from preloved_auth.models import *
 from store.models import *
 from store.views import return_not_auth, return_not_post, return_id_not_found
@@ -63,34 +63,28 @@ class HomePageController:
     @staticmethod
     def search(request):
         params = request.GET.get('q')
-        client = weaviate.connect_to_custom(
-            http_host="34.87.112.226",
-            http_port=8080,
-            http_secure=False,
-            grpc_host="34.87.112.226",
-            grpc_port=50051,
-            grpc_secure=False,
+        # Query the collection
+        results = title_model.query(
+            query_texts=[params],
+            n_results=30
         )
-        results = None
-        try:
-            items = client.collections.get("ItemMM")
-            results = items.query.near_text(
-                query=params,
-                distance=0.6,
-                return_properties=["itemId", "name"]
-            )
-        finally:
-            client.close()
+        # Extract item IDs from the results
+        item_ids = [metadata['item_id'] for metadata in results['metadatas'][0]]
+        # Fetch the corresponding Item objects
+        items = Item.objects.filter(itemID__in=item_ids)
+        # Prepare the query result
         query_result = []
-        itemIDs = []
-        for result in results.objects:
-            if result.properties["itemId"] in itemIDs:
-                continue
+        for item in items:
+            slug = Slug.objects.filter(itemID=item.itemID).first()
+            link = HomePageController.generate_link(slug.slug)
             query_result.append({
-                'itemID': result.properties["itemId"],
-                'name': result.properties["name"]
+                'itemID': item.itemID,
+                'name': item.name,
+                'price': str(item.price),  # Convert Decimal to string for JSON serialization
+                'image': link,
+                'storeName': item.storeID.storeName
             })
-            itemIDs.append(result.properties["itemId"])
+        # Return the results as JSON
         return JsonResponse({'results': query_result})
 
     @staticmethod
