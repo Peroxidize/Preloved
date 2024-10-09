@@ -98,8 +98,7 @@ class HomePageController:
         params = request.FILES.get('photo')
         extractor = VGGFeatureExtractor()
         # Extract features from the uploaded image
-        img = extractor.preprocess_image(params)
-        features = extractor.extract_features(img)
+        features = extractor.extract_features(params.read())
 
         # Query the central_model collection
         results = central_model.query(
