@@ -71,11 +71,9 @@ class HomePageController:
         )
         # Extract item IDs from the results
         item_ids = [metadata['item_id'] for metadata in results['metadatas'][0]]
-        # Fetch the corresponding Item objects
-        items = Item.objects.filter(itemID__in=item_ids)
-        # Prepare the query result
         query_result = []
-        for item in items:
+        for itemID in item_ids:
+            item = Item.objects.get(itemID=itemID)
             slug = Slug.objects.filter(itemID=item.itemID).first()
             if slug is None:
                 continue
@@ -109,12 +107,10 @@ class HomePageController:
         # Extract item IDs from the results
         item_ids = [metadata['item_id'] for metadata in results['metadatas'][0]]
 
-        # Fetch the corresponding Item objects
-        items = Item.objects.filter(itemID__in=item_ids)
-
         # Prepare the query result
         query_result = []
-        for item in items:
+        for itemID in item_ids:
+            item = Item.objects.get(itemID=itemID)
             slug = Slug.objects.filter(itemID=item.itemID).first()
             if slug is None:
                 continue
