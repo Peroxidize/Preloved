@@ -67,7 +67,7 @@ class HomePageController:
         # Query the collection
         results = title_model.query(
             query_texts=[params],
-            n_results=30
+            n_results=20
         )
         # Extract item IDs from the results
         item_ids = [metadata['item_id'] for metadata in results['metadatas'][0]]
@@ -101,7 +101,7 @@ class HomePageController:
         # Query the central_model collection
         results = central_model.query(
             query_embeddings=[features.tolist()],
-            n_results=30
+            n_results=20
         )
 
         # Extract item IDs from the results
