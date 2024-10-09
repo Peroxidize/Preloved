@@ -76,6 +76,8 @@ class HomePageController:
         query_result = []
         for item in items:
             slug = Slug.objects.filter(itemID=item.itemID).first()
+            if slug is None:
+                continue
             link = HomePageController.generate_link(slug.slug)
             query_result.append({
                 'itemID': item.itemID,
