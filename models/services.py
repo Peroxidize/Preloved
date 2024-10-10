@@ -1,4 +1,5 @@
-from store.models import Slug
+from homepage.views import HomePageController
+from store.models import Item, Slug
 from .migrations.image_transformer import VGGFeatureExtractor, download_image
 
 from .migrations.image_transformer import download_image
@@ -46,3 +47,22 @@ def query_database(vector_embeddings, n=20, not_equal_to=None):
             item_ids.append(metadata.get('item_id'))
 
     return item_ids
+
+def query_database_by_image(embeddings, n):
+    # Query the central_model collection
+    results = central_model.query(
+        query_embeddings=[embeddings],
+        n_results=n
+    )
+
+    # Extract item IDs from the results
+    item_ids = [metadata['item_id'] for metadata in results['metadatas'][0]]
+
+    # Prepare the query result
+    query_result = []
+    for itemID in item_ids:
+        item = Item.objects.get(itemID=itemID)
+        query_result.append(item)
+
+    # Return the results as JSON
+    return query_result

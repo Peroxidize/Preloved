@@ -7,6 +7,9 @@ import os
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
+
+from models.migrations.image_transformer import VGGFeatureExtractor
+from models.services import query_database_by_image
 from .models import *
 from preloved_auth.models import ShopOwner, Location
 from storage.views import StorageWorker
@@ -252,6 +255,38 @@ class ShopController:
     def auto_tag_item(request):
         if request.method != 'POST':
             return return_not_post()
+        
+        params = request.FILES.get('img')
+        items = query_database_by_image(params)
+        extractor = VGGFeatureExtractor()
+        # Extract features from the uploaded image
+        features = extractor.extract_features(params.read())
+        items = query_database_by_image(features.tolist(),3)
+
+        # Get tags for each item and count their frequency
+        tag_frequency = {}
+        for item in items:
+            tags = ItemTag.objects.filter(item=item)
+            for tag in tags:
+                tag_name = tag.tag.name
+                if tag_name in tag_frequency:
+                    tag_frequency[tag_name] += 1
+                else:
+                    tag_frequency[tag_name] = 1
+        
+        # Get the top 3 tags
+        top_tags = sorted(tag_frequency.items(), key=lambda x: x[1], reverse=True)[:3]
+        
+        # Store the tag names in a list
+        top_tag_names = [tag[0] for tag in top_tags]
+
+        # Return the top tag names as JSON response
+        return JsonResponse(top_tag_names)
+
+        
+
+
+
         """
         image_file = request.FILES.get('img')
         image = Image.open(image_file).convert('RGB')
