@@ -281,7 +281,7 @@ class ShopController:
         top_tag_names = [tag[0] for tag in top_tags]
 
         # Return the top tag names as JSON response
-        return JsonResponse(top_tag_names)
+        return JsonResponse({"data":top_tag_names})
 
         
 
