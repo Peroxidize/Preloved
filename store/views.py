@@ -257,7 +257,6 @@ class ShopController:
             return return_not_post()
         
         params = request.FILES.get('img')
-        items = query_database_by_image(params)
         extractor = VGGFeatureExtractor()
         # Extract features from the uploaded image
         features = extractor.extract_features(params.read())
