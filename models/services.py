@@ -3,11 +3,19 @@ from store.models import Item, Slug
 from .migrations.image_transformer import VGGFeatureExtractor, download_image
 
 from .migrations.image_transformer import download_image
-from . import central_model
+from . import central_model, vector_client
 
 
 def cascade_update_on_startup():
-    objects = Slug.objects.filter(isModelRegistered=False)
+    vector_client.delete_collection(name="central")
+    # Create a new collection for the central model
+    new_central_model = vector_client.get_or_create_collection('central')
+
+    # Update the central_model reference
+    global central_model
+    central_model = new_central_model
+    print("Central model has been reset and a new collection has been created.")
+    objects = Slug.objects.all()
     extractor = VGGFeatureExtractor()
     cnt = 1
     for obj in objects:
@@ -17,6 +25,7 @@ def cascade_update_on_startup():
         add_vector_to_database(obj.slugID, extractor.extract_features(img), obj.itemID.itemID)
         obj.isModelRegistered = True
         obj.save()
+    print("Cascade update completed successfully")
 
 
 def add_vector_to_database(slug_id, vector, item_id):
