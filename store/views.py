@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from models.migrations.image_transformer import VGGFeatureExtractor
-from models.services import query_database_by_image
+from models.services import add_vector_to_database, query_database_by_image
 from .models import *
 from preloved_auth.models import ShopOwner, Location
 from storage.views import StorageWorker
@@ -22,6 +22,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 import base64
 import weaviate
 from weaviate.util import generate_uuid5
+from models.migrations.image_transformer import VGGFeatureExtractor
 """
 df = pd.read_csv("~/preloved/store/empty-dataset.csv")
 
@@ -218,38 +219,11 @@ class ShopController:
         slug.save()
 
         imgStream.seek(0)  # Reset the file pointer to the beginning
-        # Convert to Base64
-        img_bytes = imgStream.read()
-        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
-        client = weaviate.connect_to_custom(
-            http_host="34.87.112.226",
-            http_port=8080,
-            http_secure=False,
-            grpc_host="34.87.112.226",
-            grpc_port=50051,
-            grpc_secure=False,
-        )
-        errors = []
-        try:
-            items = client.collections.get("ItemMM")
-            item_obj = {
-                "itemId": item.itemID,
-                "image": img_base64,
-                "name": item.name,
-                "description": item.description,
-            }
-            with items.batch.dynamic() as batch:
-                batch.add_object(properties=item_obj, uuid=generate_uuid5(item.itemID))
-            # Check for failed objects
-            if len(items.batch.failed_objects) > 0:
-                print(f"Failed to import {len(items.batch.failed_objects)} objects")
-                for failed in items.batch.failed_objects:
-                    print(f"e.g. Failed to import object with error: {failed.message}")
-                    errors.append(failed.message)
-        finally:
-            client.close()
+        extractor = VGGFeatureExtractor()
+        features = extractor.extract_features(imgStream.read())
+        add_vector_to_database(slug.slugID, features, item.itemID)
 
-        return JsonResponse({'response': 'Ok!', 'slug': slugString, 'errors': errors, 'itemObj': item_obj})
+        return JsonResponse({'response': 'Ok!', 'slug': slugString})
 
     @staticmethod
     def auto_tag_item(request):
