@@ -10,7 +10,6 @@ from models.migrations.image_transformer import VGGFeatureExtractor
 from models import title_model, central_model
 from preloved_auth.models import *
 from store.models import *
-from store.views import return_not_auth, return_not_post, return_id_not_found
 from preloved import preloved_secrets
 import base64
 
@@ -90,6 +89,7 @@ class HomePageController:
 
     @staticmethod
     def img_search(request):
+        from store.views import return_not_post
         if request.method != 'POST':
             return return_not_post()
 
@@ -131,6 +131,7 @@ class CartController:
 
     @staticmethod
     def add_to_cart(request):
+        from store.views import return_not_auth, return_not_post
         if not request.user.is_authenticated:
             return return_not_auth()
         if request.method != 'POST':
@@ -146,6 +147,7 @@ class CartController:
 
     @staticmethod
     def remove_from_cart(request):
+        from store.views import return_not_auth, return_not_post
         if not request.user.is_authenticated:
             return return_not_auth()
         if request.method != 'POST':
@@ -160,6 +162,7 @@ class CartController:
 
     @staticmethod
     def get_cart_items(request):
+        from store.views import return_not_auth
         if not request.user.is_authenticated:
             return return_not_auth
         cartItems = Cart.objects.filter(user=request.user)
