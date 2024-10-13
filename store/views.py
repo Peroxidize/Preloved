@@ -20,8 +20,6 @@ from torch import nn, optim
 from torchvision.models import mobilenet_v3_large, MobileNet_V3_Large_Weights
 from django.core.files.uploadedfile import InMemoryUploadedFile
 import base64
-import weaviate
-from weaviate.util import generate_uuid5
 from models.migrations.image_transformer import VGGFeatureExtractor
 """
 df = pd.read_csv("~/preloved/store/empty-dataset.csv")
