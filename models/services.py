@@ -3,7 +3,7 @@ from store.models import Item, Slug
 from .migrations.image_transformer import VGGFeatureExtractor, download_image
 
 from .migrations.image_transformer import download_image
-from . import central_model, vector_client
+from . import central_model, vector_client, title_model
 
 
 def cascade_update_on_startup():
@@ -37,6 +37,20 @@ def add_vector_to_database(slug_id, vector, item_id):
         }
     )
     return
+
+def add_title_to_database(item):
+    """
+    Add a product title to the title_model collection.
+    
+    :param item: An Item object containing the product information.
+    """
+    title_model.add(
+        documents=[item.name],
+        ids=[str(item.itemID)],
+        metadatas=[{"item_id": item.itemID}]
+    )
+    print(f"Added title '{item.name}' with ID {item.itemID} to title_model.")
+
 
 
 def query_database(vector_embeddings, n=20, not_equal_to=None):

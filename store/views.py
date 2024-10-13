@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from models.migrations.image_transformer import VGGFeatureExtractor
-from models.services import add_vector_to_database, query_database_by_image
+from models.services import add_title_to_database, add_vector_to_database, query_database_by_image
 from .models import *
 from preloved_auth.models import ShopOwner, Location
 from storage.views import StorageWorker
@@ -168,6 +168,7 @@ class ShopController:
             return JsonResponse({'error': 'Shop has no store'}, status=400)
         item = Item(storeID=store, description=description, isFeminine=style, name=name, price=price, size=size)
         item.save()
+        add_title_to_database(item)
         self.attach_size_to_item(item.itemID, size)
         ItemTag(tag=t, item=item).save()
         return JsonResponse({'response': 'Ok!', 'generatedID': item.itemID})
