@@ -39,7 +39,7 @@ class HomePageController:
 
     @staticmethod
     def generate_iterative_homepage(userID):
-        items = Item.objects.filter(isTaken=0)
+        items = Item.objects.filter(isTaken=0).order_by('?')
         recently_bought = RecentlyBought.objects.filter(userID=userID).order_by('-created').first()
         recently_query = []
         extractor = VGGFeatureExtractor()
