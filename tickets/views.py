@@ -5,9 +5,10 @@ from django.views import View
 from datetime import datetime
 
 from preloved_auth.models import ShopUser
-from .models import Ticket, Status
+from .models import RecentlyBought, Ticket, Status
 from django.http import JsonResponse
 from store.models import *
+from models import title_model, central_model
 
 
 
@@ -209,6 +210,16 @@ class TicketController(View):
             ticket.itemID.storeID.shopOwnerID.save()
             ticket.itemID.save()
             ticket.save()
+            RecentlyBought.objects.create(userID=ticket.userID, itemID=ticket.itemID)
+
+            title_model.delete(
+                ids=[str(ticket.itemID.itemID)]
+            )
+            slug = Slug.objects.filter(itemID=ticket.itemID)
+            for s in slug:
+                central_model.delete(
+                    ids=[str(s.slugID)]
+                )
         elif status.level == 2:
             ticket.expected_buyer_fulfillment = timezone.now() + timezone.timedelta(days=5)
             ticket.save()

@@ -27,3 +27,11 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"Ticket {self.ticketID} - Status: {self.status}"
+    
+class RecentlyBought(models.Model):
+    userID = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recently_bought')
+    itemID = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='recently_bought')
+    created = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Recently Bought - User: {self.userID} - Item: {self.itemID}"

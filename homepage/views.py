@@ -3,7 +3,9 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
-from tickets.models import Ticket
+from models.services import query_database
+from preloved_collections.models import Collection, CollectionItemUser
+from tickets.models import RecentlyBought, Ticket
 from .models import *
 # Create your views here.
 from models.migrations.image_transformer import VGGFeatureExtractor
@@ -21,7 +23,7 @@ class HomePageController:
         if request.session.get('items') is None:
             request.session['items'] = []
         if len(request.session.get('items')) <= 5:
-            request.session['items'] = HomePageController.generate_iterative_homepage()
+            request.session['items'] = HomePageController.generate_iterative_homepage(request.user)
         item: list = request.session['items']
         items = []
         try:
@@ -32,10 +34,47 @@ class HomePageController:
         return JsonResponse({'items': items})
 
     @staticmethod
-    def generate_iterative_homepage():
-        items = Item.objects.filter(isTaken=0).order_by('?')
-        item_list = []
+    def generate_iterative_homepage(userID):
+        items = Item.objects.filter(isTaken=0)
+        recently_bought = RecentlyBought.objects.filter(userID=userID).order_by('-created').first()
+        recently_query = []
+        extractor = VGGFeatureExtractor()
+        recently_suggested = []
+        recently_suggested_ids = set()  # To keep track of added item IDs
+        if recently_bought is not None:
+            slug = Slug.objects.filter(itemID=recently_bought.itemID).first()
+            features = extractor.extract_features(slug.slug)
+            recently_query = query_database(features, 10, not_equal_to=recently_bought.itemID.itemID)
+            for itemID in recently_query:
+                if itemID not in recently_suggested_ids:
+                    item = Item.objects.get(itemID=itemID)
+                    recently_suggested.append(item)
+                    recently_suggested_ids.add(itemID)
+
+        collections = Collection.objects.filter(user=userID)
+        if len(collections) > 0:
+            for collection in collections:
+                collection_items = CollectionItemUser.objects.filter(collection=collection)
+            embedding_array = []
+            for collection_item in collection_items:
+                slug = Slug.objects.filter(itemID=collection_item.item).first()
+                features = extractor.extract_features(slug.slug)
+                embedding_array.append(features)
+            collection_query = query_database(embedding_array, 5)
+            for itemID in collection_query:
+                if itemID not in recently_suggested_ids:
+                    item = Item.objects.get(itemID=itemID)
+                    recently_suggested.append(item)
+                    recently_suggested_ids.add(itemID)
+
+        # Add items not in recently_suggested to recently_suggested
         for item in items:
+            if item.itemID not in recently_suggested_ids:
+                recently_suggested.append(item)
+                recently_suggested_ids.add(item.itemID)
+
+        item_list = []
+        for item in recently_suggested:
             if item.storeID.shopOwnerID.balance <= 0:
                 continue
             map = {}
@@ -181,6 +220,7 @@ class CartController:
 
     @staticmethod
     def purchase_all(request):
+        from store.views import return_not_auth
         if not request.user.is_authenticated:
             return return_not_auth()
         items = Cart.objects.all()
