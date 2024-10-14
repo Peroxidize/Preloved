@@ -73,6 +73,9 @@ class HomePageController:
                 recently_suggested.append(item)
                 recently_suggested_ids.add(item.itemID)
 
+        # Reverse the order of recently_suggested
+        recently_suggested.reverse()
+
         item_list = []
         for item in recently_suggested:
             if item.storeID.shopOwnerID.balance <= 0:
