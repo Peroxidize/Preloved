@@ -1,4 +1,3 @@
-from homepage.views import HomePageController
 from store.models import Item, Slug
 from .migrations.image_transformer import VGGFeatureExtractor, download_image
 
