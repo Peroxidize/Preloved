@@ -2,6 +2,7 @@ import weaviate
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
+from django.core.paginator import Paginator
 
 from models.services import query_database
 from preloved_collections.models import Collection, CollectionItemUser
@@ -20,18 +21,21 @@ class HomePageController:
 
     @staticmethod
     def homepage(request):
-        if request.session.get('items') is None:
-            request.session['items'] = []
-        if len(request.session.get('items')) <= 5:
+        page_number = request.GET.get('page', 1)
+        items_per_page = 20  # Adjust this number as needed
+
+        if request.session.get('items') is None or len(request.session.get('items')) < items_per_page:
             request.session['items'] = HomePageController.generate_iterative_homepage(request.user)
-        item: list = request.session['items']
-        items = []
-        try:
-            for i in range(50):
-                items.append(item.pop())
-        except IndexError:
-            pass
-        return JsonResponse({'items': items})
+
+        all_items = request.session['items']
+        paginator = Paginator(all_items, items_per_page)
+        page_obj = paginator.get_page(page_number)
+
+        return JsonResponse({
+            'items': list(page_obj),
+            'has_next': page_obj.has_next(),
+            'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None
+        })
 
     @staticmethod
     def generate_iterative_homepage(userID):
@@ -72,9 +76,6 @@ class HomePageController:
             if item.itemID not in recently_suggested_ids:
                 recently_suggested.append(item)
                 recently_suggested_ids.add(item.itemID)
-
-        # Reverse the order of recently_suggested
-        recently_suggested.reverse()
 
         item_list = []
         for item in recently_suggested:
