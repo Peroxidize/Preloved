@@ -9,7 +9,7 @@ from preloved_collections.models import Collection, CollectionItemUser
 from tickets.models import RecentlyBought, Ticket
 from .models import *
 # Create your views here.
-from models.migrations.image_transformer import VGGFeatureExtractor
+from models.migrations.image_transformer import VGGFeatureExtractor, download_image
 from models import title_model, central_model
 from preloved_auth.models import *
 from store.models import *
@@ -47,7 +47,9 @@ class HomePageController:
         recently_suggested_ids = set()  # To keep track of added item IDs
         if recently_bought is not None:
             slug = Slug.objects.filter(itemID=recently_bought.itemID).first()
-            features = extractor.extract_features(slug.slug)
+            link = HomePageController.generate_link(slug.slug)
+            img = download_image(link)
+            features = extractor.extract_features(img)
             recently_query = query_database(features, 10, not_equal_to=recently_bought.itemID.itemID)
             for itemID in recently_query:
                 if itemID not in recently_suggested_ids:
@@ -62,7 +64,9 @@ class HomePageController:
             embedding_array = []
             for collection_item in collection_items:
                 slug = Slug.objects.filter(itemID=collection_item.item).first()
-                features = extractor.extract_features(slug.slug)
+                link = HomePageController.generate_link(slug.slug)
+                img = download_image(link)
+                features = extractor.extract_features(img)
                 embedding_array.append(features)
             collection_query = query_database(embedding_array, 5)
             for itemID in collection_query:
