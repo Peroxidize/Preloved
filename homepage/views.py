@@ -25,7 +25,7 @@ class HomePageController:
         items_per_page = 20  # Adjust this number as needed
 
         if request.session.get('items') is None or len(request.session.get('items')) < items_per_page:
-            request.session['items'] = HomePageController.generate_iterative_homepage(request.user)
+            request.session['items'] = HomePageController.generate_iterative_homepage(request.user.id)
 
         all_items = request.session['items']
         paginator = Paginator(all_items, items_per_page)
