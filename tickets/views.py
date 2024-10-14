@@ -5,7 +5,7 @@ from django.views import View
 from datetime import datetime
 
 from preloved_auth.models import ShopUser
-from .models import Ticket, Status
+from .models import RecentlyBought, Ticket, Status
 from django.http import JsonResponse
 from store.models import *
 
@@ -209,6 +209,7 @@ class TicketController(View):
             ticket.itemID.storeID.shopOwnerID.save()
             ticket.itemID.save()
             ticket.save()
+            RecentlyBought.objects.create(userID=ticket.userID, itemID=ticket.itemID)
         elif status.level == 2:
             ticket.expected_buyer_fulfillment = timezone.now() + timezone.timedelta(days=5)
             ticket.save()
