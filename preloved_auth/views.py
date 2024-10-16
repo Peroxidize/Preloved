@@ -128,7 +128,7 @@ class SignUpController:
             for tag_id in tag_ids:
                 tag = Tag.objects.filter(tagID=int(tag_id)).first()
                 if tag:
-                    Preferences.objects.create(userID=u, tag=tag)
+                    Preferences.objects.create(user=u, tags=tag)
 
         except KeyError as key_error:
             return JsonResponse({'error': f'Missing required parameter: {key_error}'}, status=400)
