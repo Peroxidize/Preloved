@@ -207,12 +207,31 @@ class SignUpController:
         return return_not_auth()
     
     def attach_pref_to_user(request):
-        if not request.method == 'POST':
+        if request.method != 'POST':
             return return_not_post()
-        tag = Tag.objects.filter(tagID=int(request.POST.get('tagID'))).first()
-        pref = Preferences(userID=request.user, tag=tag)
-        pref.save()
-        return JsonResponse({'response' : 'ok!'})
+        
+        try:
+            # Handle both list and JSON string formats
+            tag_ids = request.POST.getlist('tagIDs')
+            if not tag_ids:
+                tag_ids = json.loads(request.POST.get('tagIDs', '[]'))
+            
+            # Get or create a single Preferences object for the user
+            pref, created = Preferences.objects.get_or_create(userID=request.user)
+            
+            for tag_id in tag_ids:
+                tag = Tag.objects.filter(tagID=int(tag_id)).first()
+                if tag:
+                    # Add the tag if it's not already associated with the user's preferences
+                    pref.tags.add(tag)
+            
+            return JsonResponse({'response': 'ok!'})
+        
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid tagIDs format. Expected JSON array or multiple form entries.'}, status=400)
+        
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
 
 class VerificationController:
@@ -525,6 +544,8 @@ class LocationController:
         destination = f"destination={destination_lat},{destination_lng}"
         maps_link = f"{base_url}&{origin}&{destination}"
         return maps_link
+
+
 
 
 
