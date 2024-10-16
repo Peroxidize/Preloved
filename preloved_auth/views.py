@@ -223,7 +223,7 @@ class SignUpController:
                 tag_ids = json.loads(request.POST.get('tagIDs', '[]'))
             
             # Get or create a single Preferences object for the user
-            pref, created = Preferences.objects.get_or_create(userID=request.user)
+            pref, created = Preferences.objects.get_or_create(user=request.user)
             
             for tag_id in tag_ids:
                 tag = Tag.objects.filter(tagID=int(tag_id)).first()
