@@ -120,8 +120,7 @@ class SignUpController:
             if not tag_ids:
                 tag_ids = json.loads(request.POST.get('tagIDs', '[]'))
             
-            u = User.objects.create_user(username=email, email=email, password=password, first_name=first_name,
-                                         last_name=last_name, is_staff=1)
+            u = User.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, is_staff=1)
             shop_user = ShopUser.objects.create(userID=u, phone_no=phone_no, locationID=locationID, is_feminine=isFeminine)
 
             # Create Preferences object for the user
@@ -239,6 +238,20 @@ class SignUpController:
         
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+        
+    def get_pref_for_user(request):
+        if not request.user.is_authenticated:
+            return return_not_auth()
+        
+        try:
+            preferences, created = Preferences.objects.get_or_create(user=request.user)
+            tags = preferences.tags.all()
+            tag_dict = {tag.name: tag.tagID for tag in tags}
+            return JsonResponse(tag_dict)
+        
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
 
 
 class VerificationController:
@@ -551,6 +564,7 @@ class LocationController:
         destination = f"destination={destination_lat},{destination_lng}"
         maps_link = f"{base_url}&{origin}&{destination}"
         return maps_link
+
 
 
 
