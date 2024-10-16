@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.core.paginator import Paginator
 
-from models.services import query_database
+from models.services import query_database, query_database_by_title
 from preloved_collections.models import Collection, CollectionItemUser
 from tickets.models import RecentlyBought, Ticket
 from .models import *
@@ -59,17 +59,26 @@ class HomePageController:
 
         collections = Collection.objects.filter(user=userID)
         if len(collections) > 0:
+            collection_suggested = []
             for collection in collections:
-                collection_items = CollectionItemUser.objects.filter(collection=collection)
-            embedding_array = []
-            for collection_item in collection_items:
-                slug = Slug.objects.filter(itemID=collection_item.item).first()
+                collection_items = CollectionItemUser.objects.filter(collection=collection).first()
+                slug = Slug.objects.filter(itemID=collection_items.item).first()
                 link = HomePageController.generate_link(slug.slug)
                 img = download_image(link)
                 features = extractor.extract_features(img)
-                embedding_array.append(features)
-            collection_query = query_database(embedding_array, 5)
-            for itemID in collection_query:
+                collection_query = query_database(features, 5)
+                collection_suggested.append(collection_query)
+            for itemID in collection_suggested:
+                if itemID not in recently_suggested_ids:
+                    item = Item.objects.get(itemID=itemID)
+                    recently_suggested.append(item)
+                    recently_suggested_ids.add(itemID)
+        
+        preferences, created = Preferences.objects.get_or_create(user=userID)
+        tags = preferences.tags.all()
+        for tag in tags:
+            itemIDs = query_database_by_title(tag.name, 3)
+            for itemID in itemIDs:
                 if itemID not in recently_suggested_ids:
                     item = Item.objects.get(itemID=itemID)
                     recently_suggested.append(item)

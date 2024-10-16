@@ -50,6 +50,22 @@ def add_title_to_database(item):
     )
     print(f"Added title '{item.name}' with ID {item.itemID} to title_model.")
 
+def query_database_by_title(title, n=20, not_equal_to=None):
+    # Step 1: Query the database for similar vectors
+    items = title_model.query(
+        query_texts=[title],
+        n_results=n
+    )
+
+    # Step 2: Extract the item_ids and apply the not_equal_to filter manually
+    item_ids = []
+
+    for idx, metadata in enumerate(items['metadatas'][0]):
+        # If a filter is provided, exclude the item that matches 'not_equal_to'
+        if metadata.get('item_id') != not_equal_to:
+            item_ids.append(metadata.get('item_id'))
+
+
 
 
 def query_database(vector_embeddings, n=20, not_equal_to=None):
