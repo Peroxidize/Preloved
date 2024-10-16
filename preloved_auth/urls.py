@@ -15,6 +15,7 @@ urlpatterns = [
     path('get_current_user', get_current_user ),
     path('shop_id_selfie', shop_id_selfie),
     path('new_shop_owner', new_shop_owner),
+    path('attach_pref_to_user', SignUpController.attach_pref_to_user),
     path('verification/get_image', get_image),
     path('verification/document_status', document_status),
     path('verification/get_shop_owner_details', get_shop_owner_details),

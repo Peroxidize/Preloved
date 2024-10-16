@@ -15,6 +15,7 @@ from django.core.files.storage import default_storage as storage
 from django.core.files.base import ContentFile
 from datetime import datetime
 from storage.views import StorageWorker
+import json
 
 storage_worker = StorageWorker()
 
@@ -113,12 +114,27 @@ class SignUpController:
             phone_no = request.POST['phone_no']
             isFeminine = int(request.POST['isFeminine'])
             locationID = None
+            
+            # Handle both list and JSON string formats
+            tag_ids = request.POST.getlist('tagIDs')
+            if not tag_ids:
+                tag_ids = json.loads(request.POST.get('tagIDs', '[]'))
+            
             u = User.objects.create_user(username=email, email=email, password=password, first_name=first_name,
                                          last_name=last_name, is_staff=1)
-            ShopUser.objects.create(userID=u, phone_no=phone_no, locationID=locationID, is_feminine=isFeminine)
+            shop_user = ShopUser.objects.create(userID=u, phone_no=phone_no, locationID=locationID, is_feminine=isFeminine)
+
+            # Attach preferences if tagIDs are provided
+            for tag_id in tag_ids:
+                tag = Tag.objects.filter(tagID=int(tag_id)).first()
+                if tag:
+                    Preferences.objects.create(userID=u, tag=tag)
 
         except KeyError as key_error:
             return JsonResponse({'error': f'Missing required parameter: {key_error}'}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid tagIDs format. Expected JSON array or multiple form entries.'}, status=400)
 
         except Exception as ex:
             msg = f'Error: {str(ex)}'
@@ -189,6 +205,14 @@ class SignUpController:
             slugs.save()
             return JsonResponse({'response': 'Ok!'})
         return return_not_auth()
+    
+    def attach_pref_to_user(request):
+        if not request.method == 'POST':
+            return return_not_post()
+        tag = Tag.objects.filter(tagID=int(request.POST.get('tagID'))).first()
+        pref = Preferences(userID=request.user, tag=tag)
+        pref.save()
+        return JsonResponse({'response' : 'ok!'})
 
 
 class VerificationController:
@@ -448,7 +472,7 @@ def get_link(request):
     return JsonResponse(resulant)
 
 
-from store.models import Store
+from store.models import Preferences, Store, Tag
 class LocationController:
 
     @staticmethod
@@ -501,6 +525,7 @@ class LocationController:
         destination = f"destination={destination_lat},{destination_lng}"
         maps_link = f"{base_url}&{origin}&{destination}"
         return maps_link
+
 
 
 
