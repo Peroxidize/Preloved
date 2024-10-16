@@ -64,6 +64,7 @@ def query_database_by_title(title, n=20, not_equal_to=None):
         # If a filter is provided, exclude the item that matches 'not_equal_to'
         if metadata.get('item_id') != not_equal_to:
             item_ids.append(metadata.get('item_id'))
+    return item_ids
 
 
 
