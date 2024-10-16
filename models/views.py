@@ -12,7 +12,8 @@ def get_similar_items(request):
     itemID = int(request.GET.get('item_id'))
     num = int(request.GET.get('num'))
     slug = Slug.objects.filter(itemID=itemID).first()
-    img = download_image(slug.slug)
+    link = HomePageController.generate_link(slug.slug)
+    img = download_image(link)
     features = extractor.extract_features(img)
     itemsArr = query_database(features, n=num, not_equal_to=itemID)
 
