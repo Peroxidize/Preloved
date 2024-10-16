@@ -1,5 +1,6 @@
 from django.db import models
 from preloved_auth.models import Location, ShopOwner
+from django.contrib.auth.models import User
 
 
 # Create your models here.
@@ -69,3 +70,10 @@ class LoadVoucher(models.Model):
     value = models.IntegerField()
     is_redeemed = models.IntegerField(default=0)
 
+
+class Preferences(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferences')
+    tags = models.ManyToManyField(Tag, related_name='users')
+
+    def __str__(self):
+        return f"Preferences for {self.user.username}"
