@@ -124,11 +124,18 @@ class SignUpController:
                                          last_name=last_name, is_staff=1)
             shop_user = ShopUser.objects.create(userID=u, phone_no=phone_no, locationID=locationID, is_feminine=isFeminine)
 
+            # Create Preferences object for the user
+            preferences, created = Preferences.objects.get_or_create(user=u)
+
             # Attach preferences if tagIDs are provided
+            tags_to_add = []
             for tag_id in tag_ids:
                 tag = Tag.objects.filter(tagID=int(tag_id)).first()
                 if tag:
-                    Preferences.objects.create(user=u, tags=tag)
+                    tags_to_add.append(tag)
+            
+            # Use set() method to add tags to the many-to-many relationship
+            preferences.tags.set(tags_to_add)
 
         except KeyError as key_error:
             return JsonResponse({'error': f'Missing required parameter: {key_error}'}, status=400)
@@ -544,6 +551,7 @@ class LocationController:
         destination = f"destination={destination_lat},{destination_lng}"
         maps_link = f"{base_url}&{origin}&{destination}"
         return maps_link
+
 
 
 
