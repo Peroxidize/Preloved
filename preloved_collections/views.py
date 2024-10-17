@@ -136,7 +136,7 @@ class CollectionController:
                 link = CollectionController.generate_link(slug.slug)
                 img = download_image(link)
                 features = extractor.extract_features(img)
-                collection_query = query_database(features, 3, itemID_list)
+                collection_query = query_database(features, 5, itemID_list)
                 suggested_items.extend(collection_query)  # Use extend instead of append
         for itemID in suggested_items:
             if itemID not in recently_suggested_ids:
@@ -145,22 +145,35 @@ class CollectionController:
                 recently_suggested_ids.add(itemID)
 
         item_list = []
+        seen_item_ids = set()  # Set to track item IDs that have been added
         for result_item_id in suggested_items:
             item = Item.objects.filter(itemID=result_item_id).first()
+            slug2 = Slug.objects.filter(itemID=result_item_id).first()
+    
+            if not item or not slug2:  # Ensure item and slug exist
+                continue
+    
             if item.storeID.shopOwnerID.balance <= 0:
                 continue
-            map = {}
-            map['item_id'] = item.itemID
-            map['item_name'] = item.name
-            map['item_description'] = item.description
-            map['item_price'] = float(item.price)
-            map['size'] = item.size.sizeType
-            map['is_feminine'] = item.isFeminine
-            map['storeID'] = item.storeID.storeID
-            map['storeName'] = item.storeID.storeName
-            map['image'] = CollectionController.generate_link(slug.slug)
-            
+
+            # Check if item_id has already been added
+            if item.itemID in seen_item_ids:
+                continue
+
+            map = {
+                'item_id': item.itemID,
+                'item_name': item.name,
+                'item_description': item.description,
+                'item_price': float(item.price),
+                'size': item.size.sizeType,
+                'is_feminine': item.isFeminine,
+                'storeID': item.storeID.storeID,
+                'storeName': item.storeID.storeName,
+                'image': CollectionController.generate_link(slug2.slug),
+            }
+
             item_list.append(map)
+            seen_item_ids.add(item.itemID)  # Add item_id to the set
 
         return JsonResponse({'item_list': item_list}, status=200)
 
