@@ -29,5 +29,6 @@ urlpatterns = [
     path('homepage/', include('homepage.urls')),
     path('collections/', include('preloved_collections.urls')),
     path('models/', include('models.urls')),
+    path('chat/', include('chat.urls')),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
