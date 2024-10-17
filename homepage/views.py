@@ -61,15 +61,16 @@ class HomePageController:
         if len(collections) > 0:
             collection_suggested = []
             for collection in collections:
-                collection_items = CollectionItemUser.objects.filter(collection=collection).first()
+                collection_items = CollectionItemUser.objects.filter(collection=collection)
                 if collection_items is not None:
-                    slug = Slug.objects.filter(itemID=collection_items.item).first()
-                    if slug:
-                        link = HomePageController.generate_link(slug.slug)
-                        img = download_image(link)
-                        features = extractor.extract_features(img)
-                        collection_query = query_database(features, 5)
-                        collection_suggested.extend(collection_query)  # Use extend instead of append
+                    for item in collection_items:
+                        slug = Slug.objects.filter(itemID=item.item).first()
+                        if slug:
+                            link = HomePageController.generate_link(slug.slug)
+                            img = download_image(link)
+                            features = extractor.extract_features(img)
+                            collection_query = query_database(features, 2)
+                            collection_suggested.extend(collection_query)  # Use extend instead of append
             for itemID in collection_suggested:
                 if itemID not in recently_suggested_ids:
                     item = Item.objects.get(itemID=itemID)
