@@ -62,12 +62,14 @@ class HomePageController:
             collection_suggested = []
             for collection in collections:
                 collection_items = CollectionItemUser.objects.filter(collection=collection).first()
-                slug = Slug.objects.filter(itemID=collection_items.item).first()
-                link = HomePageController.generate_link(slug.slug)
-                img = download_image(link)
-                features = extractor.extract_features(img)
-                collection_query = query_database(features, 5)
-                collection_suggested.append(collection_query)
+                if collection_items is not None:
+                    slug = Slug.objects.filter(itemID=collection_items.item).first()
+                    if slug:
+                        link = HomePageController.generate_link(slug.slug)
+                        img = download_image(link)
+                        features = extractor.extract_features(img)
+                        collection_query = query_database(features, 5)
+                        collection_suggested.append(collection_query)
             for itemID in collection_suggested:
                 if itemID not in recently_suggested_ids:
                     item = Item.objects.get(itemID=itemID)
