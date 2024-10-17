@@ -125,7 +125,7 @@ class CollectionController:
 
         itemID_list = []
         for item in collection_items:
-            item_list.append(item.item.itemID)
+            itemID_list.append(item.item.itemID)
         
         suggested_items = []
         for item in collection_items:
