@@ -69,7 +69,7 @@ class HomePageController:
                         img = download_image(link)
                         features = extractor.extract_features(img)
                         collection_query = query_database(features, 5)
-                        collection_suggested.append(collection_query)
+                        collection_suggested.extend(collection_query)  # Use extend instead of append
             for itemID in collection_suggested:
                 if itemID not in recently_suggested_ids:
                     item = Item.objects.get(itemID=itemID)
