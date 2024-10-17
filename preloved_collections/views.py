@@ -109,6 +109,62 @@ class CollectionController:
         return JsonResponse(returning_value, status=200)
 
     @staticmethod
+    def get_similar_items_collection(request):
+        from models.migrations.image_transformer import VGGFeatureExtractor, download_image
+        from models.services import query_database, query_database_by_title
+        extractor = VGGFeatureExtractor()
+
+        recently_suggested = []
+        recently_suggested_ids = set()  # To keep track of added item IDs
+
+        collectionID = request.GET.get('collection_id')
+        collection = Collection.objects.get(id=collectionID)
+        if collectionID is None:
+            return JsonResponse({'error': 'Invalid collection ID'}, status=400)
+
+        suggested_items = []
+        collection_items = CollectionItemUser.objects.filter(collection=collection, is_deleted=False)
+        if collection_items is None:
+            return JsonResponse({'error': 'Empty set'}, status=400)
+        if collection_items is not None:
+            for item in collection_items:
+                slug = Slug.objects.filter(itemID=item.item).first()
+                if slug:
+                    link = CollectionController.generate_link(slug.slug)
+                    img = download_image(link)
+                    features = extractor.extract_features(img)
+                    collection_query = query_database(features, 2)
+                    suggested_items.extend(collection_query)  # Use extend instead of append
+
+        for itemID in suggested_items:
+            if itemID not in recently_suggested_ids:
+                item = Item.objects.get(itemID=itemID)
+                recently_suggested.append(item)
+                recently_suggested_ids.add(itemID)
+
+        item_list = []
+        for item in recently_suggested:
+            if item.storeID.shopOwnerID.balance <= 0:
+                continue
+            map = {}
+            map['item_id'] = item.itemID
+            map['item_name'] = item.name
+            map['item_description'] = item.description
+            map['item_price'] = float(item.price)
+            map['size'] = item.size.sizeType
+            map['is_feminine'] = item.isFeminine
+            map['storeID'] = item.storeID.storeID
+            map['storeName'] = item.storeID.storeName
+            images = []
+            map['images'] = images
+            image_slugs = Slug.objects.filter(itemID=item, isDeleted=0)
+            for slug in image_slugs:
+                images.append({'link': CollectionController.generate_link(slug.slug), 'slugID': slug.slugID})
+            item_list.append(map)
+
+        return JsonResponse({'item_list': item_list}, status=200)
+
+    @staticmethod
     def add_item_to_collection(request):
         if not request.user.is_authenticated:
             return return_not_auth()
