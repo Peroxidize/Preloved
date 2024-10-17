@@ -82,7 +82,11 @@ def query_database(vector_embeddings, n=20, not_equal_to=None):
 
     for idx, metadata in enumerate(items['metadatas'][0]):
         # If a filter is provided, exclude the item that matches 'not_equal_to'
-        if metadata.get('item_id') != not_equal_to:
+        if  isinstance(not_equal_to, list):
+            if metadata.get('item_id') not in not_equal_to:
+                item_ids.append(metadata.get('item_id'))
+        else:
+            metadata.get('item_id') != not_equal_to:
             item_ids.append(metadata.get('item_id'))
 
     return item_ids
