@@ -24,9 +24,9 @@ def long_poll_messages(request):
     return JsonResponse({'error': 'no new messages'}, status=400)
 
 def send_message(request):
-    user_id = request.GET.get('userID')
-    seller_id = request.GET.get('sellerID')
-    message = request.GET.get('message')
+    user_id = request.POST.get('userID')
+    seller_id = request.POST.get('sellerID')
+    message = request.POST.get('message')
 
     if not user_id or not seller_id or not message:
         return JsonResponse({'error': 'Missing required fields'}, status=400)
