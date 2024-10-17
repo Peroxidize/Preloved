@@ -61,7 +61,8 @@ def fetch_chat_history_user(request):
 
     for message in messages:
         print(message)
-        store = Store.objects.filter(shopOwnerID=int(message.sellerID)).first()
+        shopOwner = ShopOwner.objects.filter(userID=message.sellerID).first()
+        store = Store.objects.filter(ShopOwner=shopOwner).first()
         if store:
             # Add a tuple of (sellerID, storeName) to the set to ensure uniqueness
             chat_info_set.add((message.sellerID, store.storeName))
