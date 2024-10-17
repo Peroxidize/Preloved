@@ -2,6 +2,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from store.views import return_not_auth, return_not_post, return_id_not_found
 from .models import *
+from preloved_auth.models import *
+from store.models import *
 # Create your views here.
 
 
@@ -84,11 +86,27 @@ class CollectionController:
 
         collection_list = []
 
+        item_list = []
+
         for item in set:
             collection_list.append(item.item.itemID)
-        returning_value = {'collectionID': collectionID, 'collectionName': collection.name, 'itemIDs': collection_list}
-        return JsonResponse(returning_value, status=200)
 
+        for item in set:
+            item = Item.objects.get(itemID=item.item.itemID)
+            slug = Slug.objects.filter(itemID=item.itemID).first()
+            if slug is None:
+                continue
+            link = CollectionController.generate_link(slug.slug)
+            item_list.append({
+                'itemID': item.itemID,
+                'name': item.name,
+                'price': str(item.price),  # Convert Decimal to string for JSON serialization
+                'image': link,
+                'storeName': item.storeID.storeName
+            })
+
+        returning_value = {'collectionID': collectionID, 'collectionName': collection.name, 'itemIDs': collection_list, 'itemInformation': item_list}
+        return JsonResponse(returning_value, status=200)
 
     @staticmethod
     def add_item_to_collection(request):
@@ -140,6 +158,10 @@ class CollectionController:
             return JsonResponse({'error': 'Invalid item ID'}, status=400)
         CollectionItemUser.objects.get(user=user, collection=collection, item=item).delete()
         return JsonResponse({'success': True}, status=200)
+
+    @staticmethod
+    def generate_link(slug):
+        return "https://preloved.westus2.cloudapp.azure.com/media/"+ slug
 
     @staticmethod
     def rename_collection(request):
