@@ -13,3 +13,9 @@ class ChatMessage(models.Model):
             models.Index(fields=['timestamp']),
             models.Index(fields=['userID', 'sellerID'])
         ]  # Adding indexes to improve query performance
+
+    def __str__(self):
+        return f"<ChatMessage (userID={self.userID}, sellerID={self.sellerID}, message={self.message}, timestamp={self.timestamp})>"
+
+    def __repr__(self):
+        return f"<ChatMessage (userID={self.userID}, sellerID={self.sellerID}, message={self.message}, timestamp={self.timestamp})>"
