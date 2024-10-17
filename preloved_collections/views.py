@@ -158,11 +158,8 @@ class CollectionController:
             map['is_feminine'] = item.isFeminine
             map['storeID'] = item.storeID.storeID
             map['storeName'] = item.storeID.storeName
-            images = []
-            map['images'] = images
-            image_slugs = Slug.objects.filter(itemID=item, isDeleted=0)
-            for slug in image_slugs:
-                images.append({'link': CollectionController.generate_link(slug.slug), 'slugID': slug.slugID})
+            map['image'] = CollectionController.generate_link(slug.slug)
+            
             item_list.append(map)
 
         return JsonResponse({'item_list': item_list}, status=200)
