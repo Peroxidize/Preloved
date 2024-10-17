@@ -114,6 +114,8 @@ class CollectionController:
         from models.services import query_database, query_database_by_title
         extractor = VGGFeatureExtractor()
 
+        recently_suggested = []
+        recently_suggested_ids = set()  # To keep track of added item IDs
         collectionID = request.GET.get('collection_id')
         collection = Collection.objects.get(id=collectionID)
         if collectionID is None:
@@ -136,9 +138,15 @@ class CollectionController:
                 features = extractor.extract_features(img)
                 collection_query = query_database(features, 3, itemID_list)
                 suggested_items.extend(collection_query)  # Use extend instead of append
+        for itemID in suggested_items:
+            if itemID not in recently_suggested_ids:
+                item = Item.objects.get(itemID=itemID)
+                recently_suggested.append(item)
+                recently_suggested_ids.add(itemID)
 
         item_list = []
-        for item in suggested_items:
+        for result_item_id in suggested_items:
+            item = Item.objects.filter(itemID=result_item_id).first()
             if item.storeID.shopOwnerID.balance <= 0:
                 continue
             map = {}
