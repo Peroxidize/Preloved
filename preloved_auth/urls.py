@@ -25,5 +25,4 @@ urlpatterns = [
     path('verification/test_for_links', get_link),
     path('location/attach_location', LocationController.attach_location),
     path('location/get_route', LocationController.get_location_link)
-
 ]
