@@ -47,14 +47,16 @@ def fetch_all_messages(request):
     messages = ChatMessage.objects.filter(userID=user_id, sellerID=seller_id).order_by('timestamp')
     messages.update(is_read=True)
 
-    return JsonResponse({'messages': messages})
+    messages_list = list(messages.values('id', 'userID', 'sellerID', 'message', 'timestamp', 'is_read'))
+
+    return JsonResponse({'messages': messages_list})
 
 def fetch_chat_history_user(request):
-    user = ShopUser.objects.get(userID=request.user)
+    user_id = request.POST.get('userID')
 
     chat_info_set = set()  # Use a set to prevent duplicates
-    messages = ChatMessage.objects.filter(userID=user.userID).order_by('timestamp')
-    
+    messages = ChatMessage.objects.filter(userID=user_id).order_by('timestamp')
+
     for message in messages:
         store = Store.objects.filter(shopOwnerID=message.sellerID).first()
         if store:
@@ -87,6 +89,7 @@ def fetch_chat_history_seller(request):
 def get_seller_id(request):
     storeID = request.GET.get('storeID')
     store = Store.objects.get(storeID=storeID)
-    shop_owner_id = store.shopOwnerID
+    shop_owner_id = store.shopOwnerID.userID.id
+    store_name = store.storeName
 
-    return JsonResponse({'shopOwnerID': shop_owner_id})
+    return JsonResponse({'shopOwnerID': shop_owner_id, 'storeName': store_name})
