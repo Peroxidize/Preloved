@@ -7,4 +7,5 @@ urlpatterns = [
     path('fetch_all_messages', fetch_all_messages),
     path('fetch_chat_history_user', fetch_chat_history_user),
     path('fetch_chat_history_seller', fetch_chat_history_seller),
+    path('get_seller_id', get_seller_id),
 ]

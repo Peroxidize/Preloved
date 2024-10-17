@@ -83,3 +83,9 @@ def fetch_chat_history_seller(request):
     chat_info = [{'id': user_id, 'name': customer_name} for user_id, customer_name in chat_info_set]
 
     return JsonResponse({'chat_info': chat_info})
+
+def get_seller_id(request):
+    storeID = request.GET.get('storeID')
+    shopOwner = Store.objects.get(storeID=storeID)
+
+    return JsonResponse({'shopOwnerID': shopOwner.shopOwnerID})
