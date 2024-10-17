@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'store',
     'tickets',
     'homepage',
-    'preloved_collections'
+    'preloved_collections',
+    'chat'
 ]
 CORS_ALLOW_ALL_HEADERS = True
 CORS_ALLOW_ALL_ORIGINS = True
