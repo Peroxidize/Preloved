@@ -47,22 +47,20 @@ def fetch_all_messages(request):
     messages = ChatMessage.objects.filter(userID=user_id, sellerID=seller_id).order_by('timestamp')
     messages.update(is_read=True)
 
-    messages_list = list(messages.values('id', 'userID', 'sellerID', 'message', 'timestamp', 'is_read'))
+    messages_list = list(messages.values('id', 'userID', 'sellerID', 'message', 'timestamp', 'is_read', 'sender'))
 
     return JsonResponse({'messages': messages_list})
 
 def fetch_chat_history_user(request):
-    user_id = request.GET.get('userID')
-    user_id = str(user_id)
-    print(user_id)
+    user = ShopUser.objects.get(userID=request.user)
 
     chat_info_set = set()  # Use a set to prevent duplicates
-    messages = ChatMessage.objects.filter(userID=user_id).order_by('timestamp')
+    messages = ChatMessage.objects.filter(userID=user.userID.id).order_by('timestamp')
 
     for message in messages:
         print(message)
         shopOwner = ShopOwner.objects.filter(userID=message.sellerID).first()
-        store = Store.objects.filter(ShopOwner=shopOwner).first()
+        store = Store.objects.filter(shopOwnerID=shopOwner).first()
         if store:
             # Add a tuple of (sellerID, storeName) to the set to ensure uniqueness
             chat_info_set.add((message.sellerID, store.storeName))
