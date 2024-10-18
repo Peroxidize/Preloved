@@ -12,21 +12,27 @@ def long_poll_messages(request):
     user_id = request.GET.get('userID')
     seller_id = request.GET.get('sellerID')
     
+    if not user_id or not seller_id:
+        return JsonResponse({'error': 'Invalid user or seller ID'}, status=400)
+    
     while time.time() - start_time < timeout:
         # Get unread messages
-        messages = ChatMessage.objects.filter(userID=user_id, sellerID=seller_id, is_read=False).order_by('timestamp')
+        messages = ChatMessage.objects.filter(userID=user_id, sellerID=seller_id).order_by('timestamp')
         if messages.exists():
             # Mark the messages as read
+            message_list = list(messages.values())
             messages.update(is_read=True)
-            return JsonResponse({'messages': list(messages.values())})
+            return JsonResponse({'messages': message_list})
+        
         time.sleep(1)
-
-    return JsonResponse({'error': 'no new messages'}, status=400)
+    
+    return JsonResponse({'messages': []})  # Return an empty list if no new messages
 
 def send_message(request):
     user_id = request.POST.get('userID')
     seller_id = request.POST.get('sellerID')
     message = request.POST.get('message')
+    sender = request.POST.get('sender')
 
     if not user_id or not seller_id or not message:
         return JsonResponse({'error': 'Missing required fields'}, status=400)
@@ -35,6 +41,7 @@ def send_message(request):
         message=message,
         userID=user_id,
         sellerID=seller_id,
+        sender=sender,
     )
     new_message.save()
 
@@ -56,6 +63,7 @@ def fetch_chat_history_user(request):
 
     chat_info_set = set()  # Use a set to prevent duplicates
     messages = ChatMessage.objects.filter(userID=user.userID.id).order_by('timestamp')
+    print(messages)
 
     for message in messages:
         print(message)
@@ -74,13 +82,13 @@ def fetch_chat_history_seller(request):
     seller = ShopOwner.objects.get(userID=request.user)
 
     chat_info_set = set()  # Use a set to prevent duplicates
-    messages = ChatMessage.objects.filter(sellerID=seller.userID).order_by('timestamp') 
+    messages = ChatMessage.objects.filter(sellerID=seller.userID.id).order_by('timestamp') 
     
     for message in messages:
         customer = ShopUser.objects.filter(userID=message.userID).first()
         if customer:
             # Add a tuple of (userID, customerName) to the set to ensure uniqueness
-            customer_name = f"{customer.first_name} {customer.last_name}"
+            customer_name = f"{customer.userID.first_name} {customer.userID.last_name}"
             chat_info_set.add((message.userID, customer_name))
 
     # Convert the set to a list of dictionaries with 'id' and 'name' keys
