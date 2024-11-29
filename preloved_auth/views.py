@@ -222,22 +222,44 @@ class SignUpController:
             if not tag_ids:
                 tag_ids = json.loads(request.POST.get('tagIDs', '[]'))
             
+            # Convert tag_ids to integers
+            tag_ids = [int(tag_id) for tag_id in tag_ids]
+            
             # Get or create a single Preferences object for the user
             pref, created = Preferences.objects.get_or_create(user=request.user)
             
-            for tag_id in tag_ids:
-                tag = Tag.objects.filter(tagID=int(tag_id)).first()
-                if tag:
-                    # Add the tag if it's not already associated with the user's preferences
-                    pref.tags.add(tag)
+            # Get all valid tags from the provided tag_ids
+            new_tags = Tag.objects.filter(tagID__in=tag_ids)
             
-            return JsonResponse({'response': 'ok!'})
+            # Use set() to completely replace existing tags with the new set
+            # This will automatically remove tags that aren't in the new set
+            pref.tags.set(new_tags)
+            
+            # Get updated preferences for response
+            updated_tags = pref.tags.all()
+            response_data = {
+                'response': 'ok!',
+                'updated_preferences': {
+                    tag.name: tag.tagID for tag in updated_tags
+                }
+            }
+            
+            return JsonResponse(response_data)
         
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid tagIDs format. Expected JSON array or multiple form entries.'}, status=400)
+            return JsonResponse({
+                'error': 'Invalid tagIDs format. Expected JSON array or multiple form entries.'
+            }, status=400)
+        
+        except ValueError:
+            return JsonResponse({
+                'error': 'Invalid tag ID format. All tag IDs must be integers.'
+            }, status=400)
         
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
         
     def get_pref_for_user(request):
         if not request.user.is_authenticated:
