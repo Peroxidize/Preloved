@@ -6,6 +6,7 @@ from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from functools import lru_cache
 # Create your views here.
 
 
@@ -20,6 +21,7 @@ class StorageWorker:
             default_storage.save(file_path, ContentFile(file.read()))
             return file_path
 
+    @lru_cache(3)
     def get_in_namespace(self, request, filename, namespace=""):
         path = f"users/{request.user.email}/usercontent/{namespace}{filename}"
         if request.user.is_authenticated:

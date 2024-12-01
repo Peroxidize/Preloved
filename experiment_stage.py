@@ -20,3 +20,7 @@ def test_cascade_update():
 
 if __name__ == "__main__":
     test_cascade_update()
+
+
+from models.migrations.image_transformer import VGGFeatureExtractor
+
