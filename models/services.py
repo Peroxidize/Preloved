@@ -70,7 +70,9 @@ def query_database_by_title(title, n=20, not_equal_to=None):
 
 
 def query_database(vector_embeddings, n=20, not_equal_to=None):
-    n+=1
+    # Add 1 to n since we'll be filtering out the input item
+    n += 1
+    
     # Step 1: Query the database for similar vectors
     items = central_model.query(
         query_embeddings=[vector_embeddings],
@@ -81,13 +83,14 @@ def query_database(vector_embeddings, n=20, not_equal_to=None):
     item_ids = []
 
     for idx, metadata in enumerate(items['metadatas'][0]):
-        # If a filter is provided, exclude the item that matches 'not_equal_to'
-        if  isinstance(not_equal_to, list):
-            if metadata.get('item_id') not in not_equal_to:
-                item_ids.append(metadata.get('item_id'))
-        else:
-            metadata.get('item_id') != not_equal_to
-            item_ids.append(metadata.get('item_id'))
+        item_id = metadata.get('item_id')
+        # If not_equal_to is a list, check if item_id is not in that list
+        if isinstance(not_equal_to, list):
+            if item_id not in not_equal_to:
+                item_ids.append(item_id)
+        # If not_equal_to is a single value, check if item_id is not equal to it
+        elif item_id != not_equal_to:
+            item_ids.append(item_id)
 
     return item_ids
 
