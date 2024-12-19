@@ -6,3 +6,4 @@ tensorflow
 torchvision
 numpy
 pandas
+chromadb
